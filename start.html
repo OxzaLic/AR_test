@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07110d" />
+  <title>AR Monster Hunter | The Wilds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --forest: #07110d;
+      --moss: #9cad70;
+      --gold: #e8bd69;
+      --mist: #d8dfce;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: var(--forest);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--mist);
+      font-family: "Noto Sans Thai", sans-serif;
+    }
+
+    .title-screen {
+      position: relative;
+      display: grid;
+      min-height: 100svh;
+      overflow: hidden;
+      isolation: isolate;
+      color: inherit;
+      text-decoration: none;
+      background:
+        linear-gradient(90deg, rgba(4, 12, 9, 0.94) 0%, rgba(4, 12, 9, 0.74) 34%, rgba(4, 12, 9, 0.05) 78%),
+        radial-gradient(ellipse at 74% 53%, rgba(77, 109, 66, 0.36), transparent 43%),
+        linear-gradient(180deg, #0c1b14 0%, #101b12 53%, #050a08 100%);
+    }
+
+    .title-screen::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      content: "";
+      opacity: 0.2;
+      background-image:
+        repeating-linear-gradient(0deg, transparent 0 54px, rgba(205, 212, 172, 0.08) 55px, transparent 56px),
+        repeating-linear-gradient(90deg, transparent 0 82px, rgba(205, 212, 172, 0.055) 83px, transparent 84px);
+      mask-image: linear-gradient(90deg, #000, transparent 70%);
+      pointer-events: none;
+    }
+
+    .title-screen::after {
+      position: absolute;
+      z-index: -1;
+      right: -8vw;
+      bottom: -30vh;
+      left: -8vw;
+      height: 54vh;
+      content: "";
+      border-top: 1px solid rgba(192, 190, 133, 0.3);
+      border-radius: 50% 50% 0 0;
+      background: linear-gradient(180deg, rgba(67, 83, 47, 0.2), rgba(3, 8, 6, 0.94) 45%);
+      box-shadow: 0 -24px 90px rgba(142, 153, 91, 0.08);
+      pointer-events: none;
+    }
+
+    .monster-art {
+      position: absolute;
+      z-index: -1;
+      top: -3vh;
+      right: -2vw;
+      width: min(76vw, 1120px);
+      height: 108vh;
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 1.2s ease, transform 1.8s cubic-bezier(0.18, 0.72, 0.25, 1);
+      --poster-color: transparent;
+      pointer-events: none;
+    }
+
+    .monster-art.ready {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .monster-art::part(default-progress-bar) {
+      height: 3px;
+      background: var(--gold);
+    }
+
+    .monster-art::part(default-progress-mask) {
+      background: transparent;
+    }
+
+    .title-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: min(100%, 1380px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: 8vh clamp(24px, 8vw, 124px) 15vh;
+      pointer-events: none;
+    }
+
+    .field-mark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      margin-bottom: 30px;
+      color: #c6d09e;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      animation: fade-up 0.75s 0.1s both;
+    }
+
+    .field-mark::before {
+      width: 28px;
+      height: 1px;
+      content: "";
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(232, 189, 105, 0.8);
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      color: #f2ecd8;
+      font-family: "Cinzel", serif;
+      font-size: clamp(58px, 8.2vw, 124px);
+      font-weight: 800;
+      line-height: 0.9;
+      text-shadow: 0 5px 32px rgba(0, 0, 0, 0.62);
+      animation: fade-up 0.85s 0.22s both;
+    }
+
+    h1 span {
+      display: block;
+      margin-top: 15px;
+      color: var(--gold);
+      font-size: 0.45em;
+      font-weight: 600;
+      line-height: 1.12;
+    }
+
+    .story-line {
+      max-width: 390px;
+      margin: 24px 0 0;
+      color: rgba(226, 232, 210, 0.84);
+      font-size: clamp(15px, 1.35vw, 18px);
+      line-height: 1.8;
+      animation: fade-up 0.9s 0.38s both;
+    }
+
+    .world-coordinate {
+      position: absolute;
+      z-index: 2;
+      top: 38px;
+      right: clamp(22px, 5vw, 76px);
+      color: rgba(220, 226, 199, 0.72);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: right;
+      text-transform: uppercase;
+      animation: fade-up 0.8s 0.5s both;
+    }
+
+    .world-coordinate strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--gold);
+      font-family: "Cinzel", serif;
+      font-size: 15px;
+    }
+
+    .enter-prompt {
+      position: absolute;
+      z-index: 3;
+      right: 20px;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: #f2e5bf;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 14px #000;
+      animation: fade-up 1s 0.62s both;
+      pointer-events: none;
+    }
+
+    .enter-prompt span:last-child {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .enter-prompt i {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 13px rgba(232, 189, 105, 0.85);
+      animation: prompt-pulse 1.4s ease-in-out infinite;
+    }
+
+    .enter-prompt small {
+      color: rgba(221, 229, 208, 0.58);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .loading-label {
+      position: absolute;
+      z-index: 2;
+      right: clamp(26px, 7vw, 100px);
+      bottom: 18vh;
+      color: rgba(224, 231, 210, 0.7);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-label.loaded {
+      opacity: 0;
+    }
+
+    @keyframes fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes prompt-pulse {
+
+      0%,
+      100% {
+        opacity: 0.45;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .title-screen {
+        background:
+          linear-gradient(180deg, rgba(4, 12, 9, 0.3) 0%, rgba(4, 12, 9, 0.08) 35%, rgba(4, 12, 9, 0.9) 77%),
+          radial-gradient(ellipse at 50% 42%, rgba(77, 109, 66, 0.28), transparent 48%),
+          linear-gradient(180deg, #0c1b14 0%, #101b12 53%, #050a08 100%);
+      }
+
+      .monster-art {
+        top: 4vh;
+        right: -18vw;
+        width: 136vw;
+        height: 76vh;
+      }
+
+      .title-content {
+        justify-content: flex-end;
+        min-height: 100svh;
+        padding: 0 24px 22vh;
+      }
+
+      .field-mark {
+        gap: 9px;
+        margin-bottom: 15px;
+        font-size: 10px;
+      }
+
+      h1 {
+        max-width: 100%;
+        font-size: clamp(54px, 15vw, 82px);
+        line-height: 0.92;
+      }
+
+      h1 span {
+        max-width: 320px;
+        margin-top: 11px;
+        font-size: 0.43em;
+        line-height: 1.2;
+      }
+
+      .story-line {
+        max-width: 310px;
+        margin-top: 14px;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .world-coordinate {
+        top: max(22px, env(safe-area-inset-top));
+        right: 22px;
+        font-size: 9px;
+      }
+
+      .world-coordinate strong {
+        font-size: 12px;
+      }
+
+      .loading-label {
+        right: 24px;
+        bottom: 16vh;
+        font-size: 10px;
+      }
+
+      .enter-prompt {
+        bottom: max(22px, env(safe-area-inset-bottom));
+        gap: 7px;
+        font-size: 14px;
+      }
+
+      .enter-prompt small {
+        font-size: 9px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="title-screen" href="./index.html" aria-label="กดเพื่อเข้าเกม AR Monster Hunter">
+    <model-viewer id="titleMonster" class="monster-art" src="./model/forest_mushroom.glb"
+      alt="มอนสเตอร์เห็ดจากป่าลึกลับ" loading="eager" reveal="auto" auto-rotate rotation-per-second="12deg"
+      camera-orbit="18deg 74deg 2.8m" field-of-view="30deg" shadow-intensity="0.9" shadow-softness="0.8" exposure="1.05"
+      environment-image="neutral" disable-zoom>
+    </model-viewer>
+
+    <div class="world-coordinate" aria-hidden="true">
+      EXPEDITION 01
+      <strong>THE WILDS</strong>
+    </div>
+
+    <main class="title-content">
+      <div class="field-mark">A field guide to the unknown</div>
+      <h1>AR<span>MONSTER HUNTER</span></h1>
+      <p class="story-line">ป่าทึบเงียบลงเมื่อสัตว์ประหลาดเริ่มตื่น ออกสำรวจและตามล่าก่อนที่มันจะพบคุณ</p>
+    </main>
+
+    <div class="loading-label" id="loadingLabel">กำลังเตรียมพื้นที่ล่า...</div>
+
+    <div class="enter-prompt">
+      <span><i aria-hidden="true"></i>แตะที่ใดก็ได้เพื่อเข้าเกม</span>
+      <small>Tap anywhere to begin</small>
+    </div>
+  </a>
+
+  <script>
+    const titleMonster = document.getElementById("titleMonster");
+    const loadingLabel = document.getElementById("loadingLabel");
+
+    const SAVE_KEY = "AR_MONSTER_HUNTER_SAVE_V1";
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && data.level) {
+          const promptSub = document.querySelector(".enter-prompt small");
+          if (promptSub) {
+            promptSub.textContent = `CONTINUE AS HUNTER LV. ${data.level}`;
+          }
+        }
+      }
+    } catch (e) { }
+
+    titleMonster.addEventListener("load", () => {
+      titleMonster.classList.add("ready");
+      loadingLabel.classList.add("loaded");
+    });
+
+    titleMonster.addEventListener("error", () => {
+      loadingLabel.textContent = "กดเพื่อเริ่มออกล่า";
+    });
+
+    document.addEventListener("click", () => {
+      window.location.href = "./index.html";
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        window.location.href = "./index.html";
+      }
+    });
+  </script>
+</body>
+
+</html>

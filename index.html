@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Monster Hunter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="homeScreen" class="screen">
+      <div class="scene home-scene">
+        <main class="menu-panel">
+          <button class="menu-btn green" type="button" data-action="start-game">
+            <span class="icon">⚔</span>
+            <span class="label">เริ่มเล่น</span>
+            <span class="arrow">›</span>
+          </button>
+        </main>
+      </div>
+    </div>
+
+    <div id="gameScreen" class="screen active">
+      <div class="game-shell">
+        <div class="game-bg-glow"></div>
+        <div class="damage-vignette" id="damageVignette" aria-hidden="true"></div>
+        <div class="scratch-effect" id="scratchEffect" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="battle-outcome hidden" id="battleOutcome" aria-live="assertive">
+          <strong id="battleOutcomeText"></strong>
+          <button class="victory-continue hidden" id="continueAfterVictory" type="button">กดหน้าจอเพื่อไปต่อ</button>
+          <button class="death-restart hidden" id="restartAfterDeath" type="button">แตะเพื่อเริ่มใหม่</button>
+        </div>
+        <section class="level-up-screen hidden" id="levelUpScreen" aria-hidden="true">
+          <div class="level-up-panel">
+            <p class="level-up-kicker">LEVEL UP</p>
+            <h2>Level <span id="levelUpValue">2</span></h2>
+            <p class="points-remaining">แต้มสถานะที่เหลือ <strong id="statPointsRemaining">3</strong></p>
+            <div class="status-upgrades">
+              <div class="status-upgrade-row">
+                <div><strong>พลังชีวิต</strong><small>HP สูงสุด +15</small></div>
+                <span id="hpPointsSelected">0</span>
+                <button type="button" data-stat-upgrade="hp" aria-label="เพิ่มพลังชีวิต">+</button>
+              </div>
+              <div class="status-upgrade-row">
+                <div><strong>พลังโจมตี</strong><small>โจมตีแรงขึ้น +3</small></div>
+                <span id="attackPointsSelected">0</span>
+                <button type="button" data-stat-upgrade="attack" aria-label="เพิ่มพลังโจมตี">+</button>
+              </div>
+              <div class="status-upgrade-row">
+                <div><strong>พลังป้องกัน</strong><small>ลดความเสียหาย +2</small></div>
+                <span id="defensePointsSelected">0</span>
+                <button type="button" data-stat-upgrade="defense" aria-label="เพิ่มพลังป้องกัน">+</button>
+              </div>
+              <div class="status-upgrade-row">
+                <div><strong>LUK</strong><small>คริติคอลเพิ่ม +3%</small></div>
+                <span id="luckPointsSelected">0</span>
+                <button type="button" data-stat-upgrade="luck" aria-label="เพิ่มค่า LUK">+</button>
+              </div>
+              <div class="status-upgrade-row">
+                <div><strong>EVA</strong><small>หลบหลีกเพิ่ม +3%</small></div>
+                <span id="evasionPointsSelected">0</span>
+                <button type="button" data-stat-upgrade="evasion" aria-label="เพิ่มค่า EVA">+</button>
+              </div>
+            </div>
+            <button class="action-btn attack-btn apply-status-points" id="applyStatusPoints" type="button" disabled>ยืนยันและสแกนต่อ</button>
+          </div>
+        </section>
+
+        <header class="game-topbar">
+          <button class="hunter-panel status-trigger" id="playerStatusBtn" type="button" aria-haspopup="dialog" aria-controls="playerStatusDialog" aria-label="เปิดสถานะ Hunter">
+            <span class="avatar-frame"><span class="avatar-face"></span></span>
+            <span class="hunter-stats">
+              <span class="hunter-row">
+                <span class="name">Hunter</span>
+                <span class="level-pill" id="levelText">Lv. 1</span>
+              </span>
+              <span class="meter-heading"><span>HP</span><span id="hunterHpText">100 / 100</span></span>
+              <span class="hp-track"><span class="health-bar"><span id="healthFill"></span></span></span>
+              <span class="exp-row"><span>EXP</span><span id="xpText">80 / 200</span></span>
+              <span class="exp-track"><span class="exp-bar"><span id="expFill"></span></span></span>
+            </span>
+          </button>
+
+          <div class="top-hud">
+            <div class="hud-stat"><span class="coin-icon">◈</span><span>350</span></div>
+            <div class="hud-stat gem-stat"><span class="coin-icon">◆</span><span>5</span></div>
+            <div class="combo-chip" id="comboValue">Combo x1</div>
+            <button class="gear-btn" id="backToHome" type="button" aria-label="กลับหน้าแรก">⚙</button>
+          </div>
+        </header>
+
+        <dialog class="player-status-dialog" id="playerStatusDialog" aria-labelledby="playerStatusTitle">
+          <section class="player-status-panel">
+            <header class="player-status-header">
+              <div>
+                <p class="status-kicker">HUNTER RECORD</p>
+                <h2 id="playerStatusTitle">Hunter Status</h2>
+              </div>
+              <button class="close-btn" id="closePlayerStatus" type="button" aria-label="ปิดสถานะ">✕</button>
+            </header>
+            <div class="player-status-list">
+              <div class="player-status-row"><span>LEVEL</span><strong id="statusLevel">Lv. 1</strong></div>
+              <div class="player-status-row"><span>HP</span><strong id="statusHp">100 / 100</strong></div>
+              <div class="player-status-row"><span>ATK</span><strong id="statusAttack">14–31</strong></div>
+              <div class="player-status-row"><span>DEF</span><strong id="statusDefense">0</strong></div>
+              <div class="player-status-row"><span>LUK · CRIT</span><strong id="statusLuck">0 · 5%</strong></div>
+              <div class="player-status-row"><span>EVA · DODGE</span><strong id="statusEvasion">0 · 10%</strong></div>
+              <div class="player-status-row"><span>EXP</span><strong id="statusExp">80 / 200</strong></div>
+            </div>
+            <p class="status-points-note">แต้มสถานะคงเหลือ <strong id="statusPoints">0</strong></p>
+          </section>
+        </dialog>
+
+        <main class="battle-layout">
+          <div class="battle-column">
+            <section class="monster-panel hidden" id="monsterPanel">
+              <div class="monster-headline">
+                <span class="monster-name">Mimic Chest</span>
+                <span class="monster-level">Lv.3</span>
+              </div>
+              <div class="monster-health-bar"><span id="monsterBar"></span></div>
+              <div class="monster-health-row"><span>HP</span><span id="hpValue">100 / 100</span></div>
+              <div class="monster-traits"><span>LUK <strong id="monsterLuckStatus">4 · 17%</strong></span><span>EVA <strong id="monsterEvasionStatus">5 · 25%</strong></span></div>
+            </section>
+
+            <section class="battle-arena" id="battleArena" aria-label="สนามต่อสู้ AR">
+              <div class="card-select-bar hidden" id="cardSelectBar" aria-label="เลือกการ์ดที่จะสแกน">
+                <button type="button" class="card-btn active" data-monster="mimic">🧰 Mimic Chest</button>
+                <button type="button" class="card-btn" data-monster="forest_mushroom">🍄 Forest Mushroom</button>
+                <button type="button" class="card-btn" data-monster="mega_wyvern">🐉 Mega Wyvern</button>
+                <button type="button" class="card-btn" data-monster="quarry_horn">🦏 Quarry Horn</button>
+              </div>
+
+              <a-scene
+                id="mindarScene"
+                mindar-image="imageTargetSrc: ./target/mimic.mind; autoStart: false; uiScanning: no; uiLoading: no"
+                embedded
+                color-space="sRGB"
+                renderer="colorManagement: true, physicallyCorrectLights"
+                vr-mode-ui="enabled: false"
+                device-orientation-permission-ui="enabled: false">
+                <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+                <a-light type="ambient" intensity="1.8"></a-light>
+                <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
+                <a-entity id="mimicImageTarget" mindar-image-target="targetIndex: 0">
+                  <a-gltf-model id="mimicArModel" src="./model/mimic.glb" position="0 0 0" rotation="90 0 0" scale="0.7 0.7 0.7"></a-gltf-model>
+                </a-entity>
+              </a-scene>
+              <div class="compass-chip" aria-hidden="true">N</div>
+              <div class="status-badge" id="monsterState">Tracking</div>
+              <div class="combat-feedback hidden" id="combatFeedback" aria-live="polite"></div>
+              <div class="mimic-shield hidden" id="mimicShield" aria-hidden="true"><span>🛡</span><strong>GUARD</strong></div>
+              <button class="scan-card" id="scanBtn" type="button"><span class="scan-icon">⌕</span><span>สแกนการ์ด</span></button>
+              <div class="warning-badge" aria-hidden="true">!</div>
+              <div class="scan-camera-placeholder" id="scanPlaceholder">กดสแกนการ์ดเพื่อเปิดกล้อง</div>
+              <p class="scan-message hidden" id="scanMessage" role="status">รอแสกนการ์ด</p>
+              <button class="action-btn attack-btn scan-attack hidden" id="scanAttackBtn" type="button">
+                <span class="action-icon">⚔</span>
+                <span class="action-copy"><strong>โจมตี</strong><small>เข้าสู่การต่อสู้</small></span>
+              </button>
+            </section>
+          </div>
+
+          <aside class="battle-side" aria-label="คำสั่งต่อสู้">
+            <div class="battle-actions">
+              <button class="action-btn attack-btn" id="attackBtn" type="button"><span class="action-icon">⚔</span><span class="action-copy"><strong>โจมตี</strong><small>(Attack)</small></span></button>
+              <button class="action-btn defend-btn" id="defendBtn" type="button"><span class="action-icon">🛡</span><span class="action-copy"><strong>ป้องกัน</strong><small>(Defend)</small></span></button>
+              <button class="action-btn run-btn" id="runBtn" type="button"><span class="action-icon">🏃</span><span class="action-copy"><strong>หนี</strong><small>(Run)</small></span></button>
+            </div>
+
+            <section class="battle-log" id="battleLog" aria-label="บันทึกการต่อสู้" aria-live="polite">
+              <div class="log-line"><span class="log-mark">✧</span><span>รอแสกนการ์ด</span></div>
+            </section>
+            <div class="brand-lockup"><span class="brand-logo">AR</span><span class="brand-name">MONSTER HUNTER</span></div>
+          </aside>
+        </main>
+      </div>
+    </div>
+
+    <div id="rulesModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>วิธีการเล่น</h2>
+          <button id="closeRules" type="button" class="close-btn">✕</button>
+        </div>
+        <ol>
+          <li>กด Scan เพื่อค้นหาตำแหน่งมอนสเตอร์</li>
+          <li>กด Attack เพื่อโจมตีก่อน HP หมด</li>
+          <li>เก็บไอเทมและสำรวจพื้นที่ให้ครบ</li>
+        </ol>
+      </div>
+    </div>
+
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
